@@ -5,7 +5,7 @@ local Map = {}
 Map.__index = Map
 
 
-function map_read(tab)
+local function map_read(tab)
 	
 	local layers = {}
 	
@@ -24,7 +24,7 @@ function map_read(tab)
 		
 		for y=0, tab.layers[k].height-1 do
 			for x=0, tab.layers[k].width-1 do
-				layers[k].data[x][y] = tab.layers[k].data[(y*tab.width)+x+1]
+				layers[k].data[x][y] = tab.layers[k].data[(y*tab.width)+x+1]-1
 			end
 		end
 	end
@@ -65,7 +65,7 @@ function Map:new(fichier,texture) --cree une map
 			for y=0,(a.LY)-1 do
 				local id = v.data[x][y]
 				if id < 0 then print("error tile < 0 on "..v.name.." at ("..x..";"..y) id = 0 end   
-				a.spriteBatchs[k]:add(a.tiles[id-1], x*a.tileLX, y*a.tileLY)
+				a.spriteBatchs[k]:add(a.tiles[id], x*a.tileLX, y*a.tileLY)
 			end
         end
     end
@@ -104,8 +104,8 @@ function Map:update(nb)
         self.spriteBatchs[nb]:clear()
         for x=0,(self.LX)-1 do
             for y=0,(self.LY)-1 do
-                local id = self.layers.data[x][y]
-				self.spriteBatch_sol:add(self.tile[id], x*self.tileLX, y*self.tileLY)
+                local id = self.layers[nb].data[x][y]
+				self.spriteBatchs[nb]:add(self.tiles[id], x*self.tileLX, y*self.tileLY)
 			end
 		end
     else
@@ -113,12 +113,12 @@ function Map:update(nb)
 			v:clear()
 			for x=0,(self.LX)-1 do
 				for y=0,(self.LY)-1 do
-					local id = self.layers.data[x][y]
-					v:add(self.tile[id], x*self.tileLX, y*self.tileLY)
+					local id = self.layers[nb].data[x][y]
+					v:add(self.tiles[id], x*self.tileLX, y*self.tileLY)
 				end
 			end
 		end
-    end
+	end
 end
 
 function Map:draw(x,y)
@@ -144,7 +144,7 @@ function Map:drawdeco(x,y)
     love.graphics.draw(self.spriteBatch_deco,math.floor(x),math.floor(y))
 end
 
-function Map:gettile(x,y)
+function Map:getTile(x,y)
     if x<0 or y<0 or x>=self.LX or y>=self.LY then
         return nil
     else
@@ -156,14 +156,26 @@ function Map:gettile(x,y)
     end
 end
 
-function Map:settile(x,y,id,map)
-    if map then
-        self.layers[map].data[x][y]	=	id
-        self:update(map)
-    else
-        self.layers[1].data[x][y]	=	id
-        self:update(1)
-    end
+function Map:setTile(x,y,id,map)
+	if id >= 0 and id <= #self.tiles then
+		if x<0 or y<0 or x>=self.LX or y>=self.LY then
+			print("error x or y out of map")
+			return nil
+		end
+		
+		if map then
+			self.layers[map].data[x][y]	=	id
+			self:update(map)
+		else
+			self.layers[1].data[x][y]	=	id
+			self:update(1)
+		end
+		
+		return self:getTile(x,y,map)
+	else
+		print("error id")
+		return nil
+	end
 end
 
 function Map:reload()
