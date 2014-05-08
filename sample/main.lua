@@ -1,5 +1,4 @@
 local Map		= require 'Map'
-local inspect	= require 'inspect'
 
 function love.load()
 	

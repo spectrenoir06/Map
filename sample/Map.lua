@@ -1,5 +1,4 @@
 local json = require "json"
-local inspect = require "inspect"
 
 local Map = {}
 Map.__index = Map
@@ -8,8 +7,6 @@ Map.__index = Map
 local function map_read(tab)
 	
 	local layers = {}
-	
-	--print(tab)
 	
 	for k,v in pairs(tab.layers) do
 		layers[k] 			= {}
@@ -57,7 +54,6 @@ function Map:new(fichier,texture) --cree une map
 	a.spriteBatchs = {}
 	
 	for k,v in pairs(a.layers) do
-		--print(inspect(a.layers))
 		a.spriteBatchs[k] = love.graphics.newSpriteBatch( a.tileset, a.LX*a.LY )
 		a.spriteBatchs[k]:clear()
 		
@@ -69,30 +65,6 @@ function Map:new(fichier,texture) --cree une map
 			end
         end
     end
-	
-   -- for k,v in pairs(a.tab.layers[4]) do
-	--	print(k,v)
-	--end
-	
-	--[[
-	
-    a.data = a.json.layers[4].objects
-    a["pnj"] = {}
-    a["obj"] = {}
-    
-    for k,v in ipairs(a.data) do
-        if v.type=="pnj" then
-            table.insert(a.pnj,{ data = data.pnj[tonumber(v.properties.id)] , x=v.x/64 , y=v.y/64 } )
-        elseif v.type=="obj" then
-            table.insert(a.obj,{ data = data.obj[tonumber(v.properties.id)] , x=v.x/64 , y=v.y/64 } )
-        end
-    end
-    
-    for k,v in ipairs(a.pnj) do
-        v.sprite = sprite_new("textures/"..resolution.."/"..v.data.skin,resolution,resolution)
-    end
-	
-	--]]
 
     return setmetatable(a, Map)
 end
@@ -122,26 +94,15 @@ function Map:update(nb)
 end
 
 function Map:draw(x,y)
-	for k,v in ipairs(self.spriteBatchs) do
+	for k,v in pairs(self.spriteBatchs) do
 		love.graphics.draw(v,math.floor(x),math.floor(y))
 	end
-    
-    -- for k,v in ipairs(self.pnj) do
-        -- v.sprite:drawframe((v.x*resolution),(v.y*resolution),1)
-    -- end
-	
-	-- for x=1,self.LX do
-		-- for y=1,self.LY do
-			-- --print(self.map_col[x][y])
-			-- love.graphics.print(self.map_col[y][x],(x-1)*64+32,(y-1)*64+32)
-			-- --love.graphics.rectangle( "line", (x)*64, (y)*64, 64, 64 )
-		-- end
-	-- end
-	
 end
 
-function Map:drawdeco(x,y)
-    love.graphics.draw(self.spriteBatch_deco,math.floor(x),math.floor(y))
+function Map:drawLayers(x,y,layers)
+	for k1,v2 in pairs(layers) do
+		love.graphics.draw(self.spriteBatchs[v],math.floor(x),math.floor(y))
+	end
 end
 
 function Map:getTile(x,y)
@@ -179,6 +140,7 @@ function Map:setTile(x,y,id,map)
 end
 
 function Map:reload()
+
     self.map_sol=nil
     self.map_block=nil
     self.map_sol=map_read(map_sol.file)
@@ -195,86 +157,5 @@ end
 function Map:getLY()
     return self.LY
 end
-
-------PNJ------
---[[
-function map:getPnj(tileX,tileY)
-    if tileX<0 or tileY<0 or tileX>=self.LX or tileY>=self.LY then
-        return nil
-    else
-        for k,v in ipairs(self.pnj) do
-            if v.x==tileX and v.y==tileY then
-                return v
-            end
-        end
-    end
-end
-
------Obj-----
-
-function map:getObj(tileX,tileY)
-    if tileX<0 or tileY<0 or tileX>=self.LX or tileY>=self.LY then
-        return false
-    else
-        for k,v in ipairs(self.obj) do
-            if v.x==tileX and v.y==tileY then
-                return v
-            end
-        end
-    end
-end
-
-function map:scancol(tilex,tiley) -- return true si colision
-	local block = self:getblock(tilex,tiley)
-	local blockDataSol = data.tab[block.idsol]
-	local blockDataBlock = data.tab[block.idblock]
-	if block.idblock==nil or block.idsol==nil then
-		return false
-	else
-		return not blockDataSol.pass or not blockDataBlock.pass or block.pnj
-	end
-end
-
-function map:getblock(tilex,tiley)
-
-        local idsol, idblock, iddeco = self:gettile(tilex,tiley)
-        local pnj = self:getPnj(tilex,tiley)
-        local obj = self:getObj(tilex,tiley)
-		local tab =
-		{pnj=pnj,
-		 idsol = idsol,
-		 idblock = idblock,
-		 iddeco = iddeco,
-		 obj = obj,
-		 pnj = pnj,
-		 tilex=tilex,
-		 tiley=tiley,
-		}
-        return tab
-end
-
-function map:createMapCol()
-
-	self.map_col = {}
-	for y=0,self.LY-1 do
-		self.map_col[y] = {}
-		for x=0,self.LX-1 do
-			if self:scancol(x,y) then
-				self.map_col[y][x] = 1 
-			else
-				self.map_col[y][x] = 0
-			end
-		end
-	end
-	
-	self.grid = Grid(self.map_col)
-	self.pathfinder = Pathfinder(self.grid, 'JPS',0)
-	self.pathfinder:setMode('ORTHOGONAL')
-	self.pathfinder:setHeuristic('CARDINTCARD')
-	
-end
-
-
-]]--
 
 return Map
