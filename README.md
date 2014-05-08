@@ -1,7 +1,8 @@
 Map
 ===
 
-Map lib for Löve
+Map is a lib for Löve,
+it use map create with Tiled
 
 ![alt tag](https://raw.githubusercontent.com/spectrenoir06/Map/master/img/sample.png)
 
