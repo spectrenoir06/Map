@@ -1,4 +1,4 @@
-local Map		= require 'Map'
+local Map = require 'lib.map.Map'
 
 function love.load()
 	

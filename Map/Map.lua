@@ -1,4 +1,6 @@
-local json = require "json"
+	-- Dependencies
+	local _PATH = (...):gsub('%.Map$','')
+	require (_PATH .. '.json')
 
 local Map = {}
 Map.__index = Map
@@ -140,12 +142,11 @@ function Map:setTile(x,y,id,map)
 end
 
 function Map:reload()
-
-    self.map_sol=nil
-    self.map_block=nil
-    self.map_sol=map_read(map_sol.file)
-    self.map_block=map_read(map.file)
+	
+	self.layers 	= nil
+    self.layers 	= map_read(self.json)
     self:update() 
+
 end
 
 ------------------
