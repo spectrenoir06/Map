@@ -3,7 +3,7 @@ Map
 
 Map lib for Löve
 
-![alt tag](https://raw.github.com/spectrenoir06/Map/Master/img.png)
+![alt tag](https://raw.githubusercontent.com/spectrenoir06/Map/master/img/sample.png)
 
 Function
 ----
