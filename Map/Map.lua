@@ -1,10 +1,7 @@
-	-- Dependencies
-	local _PATH = (...):gsub('%.Map$','')
-	require (_PATH .. '.json')
+require ("lib.json")
+local class = require 'lib.middleclass'
 
-local Map = {}
-Map.__index = Map
-
+local Map = class('Map')
 
 local function map_read(tab)
 	
@@ -30,40 +27,41 @@ local function map_read(tab)
 	return layers
 end
     
-function Map:new(fichier,texture) --cree une map
+function Map:initialize(fichier,texture) --cree une map
     
 	local a={}
-    a.fichier 	= 	fichier
-    a.json 			= 	json.decode(love.filesystem.read( fichier, nil ))
-    a.layers 		= 	map_read(a.json)
-	if texture==nil then texture = a.json.tilesets[1].image end
+    self.fichier 	= 	fichier
+    self.json 			= 	json.decode(love.filesystem.read( fichier, nil ))
+    self.layers 		= 	map_read(self.json)
+	if texture==nil then texture = self.json.tilesets[1].image end
 	
-    a.LX			=	a.json.width
-    a.LY			=	a.json.height
-    a.tileset		=	love.graphics.newImage(texture)
-    a.tileLX		=	a.json.tilewidth
-    a.tileLY		=	a.json.tileheight
-	a.tilesetLX		=	a.tileset:getWidth()
-    a.tilesetLY		=	a.tileset:getHeight()
+    self.LX			=	self.json.width
+    self.LY			=	self.json.height
+    self.tileset	=	love.graphics.newImage(texture)
+    self.tileLX		=	self.json.tilewidth
+    self.tileLY		=	self.json.tileheight
+	self.tilesetLX	=	self.tileset:getWidth()
+    self.tilesetLY	=	self.tileset:getHeight()
     
-	a.tiles			=	{}
-    for y=0,(a.tilesetLY/a.tileLY)-1 do
-        for x=0,(a.tilesetLX/a.tileLX)-1 do
-            a.tiles[x+(y*a.tilesetLX/a.tileLX)] = love.graphics.newQuad(x*a.tileLX,y*a.tileLY, a.tileLX, a.tileLY ,a.tilesetLX, a.tilesetLY)
+	self.tiles		=	{}
+	
+    for y=0,(self.tilesetLY/self.tileLY)-1 do
+        for x=0,(self.tilesetLX/self.tileLX)-1 do
+            self.tiles[x+(y*self.tilesetLX/self.tileLX)] = love.graphics.newQuad(x*self.tileLX,y*self.tileLY, self.tileLX, self.tileLY ,self.tilesetLX, self.tilesetLY)
         end
     end
 	
-	a.spriteBatchs = {}
+	self.spriteBatchs = {}
 	
-	for k,v in pairs(a.layers) do
-		a.spriteBatchs[k] = love.graphics.newSpriteBatch( a.tileset, a.LX*a.LY )
-		a.spriteBatchs[k]:clear()
+	for k,v in pairs(self.layers) do
+		self.spriteBatchs[k] = love.graphics.newSpriteBatch( self.tileset, self.LX*self.LY )
+		self.spriteBatchs[k]:clear()
 		
-		for x=0,(a.LX)-1 do
-			for y=0,(a.LY)-1 do
+		for x=0,(self.LX)-1 do
+			for y=0,(self.LY)-1 do
 				local id = v.data[x][y]
 				if id < 0 then print("error tile < 0 on "..v.name.." at ("..x..";"..y) id = 0 end   
-				a.spriteBatchs[k]:add(a.tiles[id], x*a.tileLX, y*a.tileLY)
+				self.spriteBatchs[k]:add(self.tiles[id], x*self.tileLX, y*self.tileLY)
 			end
         end
     end
@@ -73,7 +71,7 @@ end
     
     
     
-function Map:update(nb)
+function Map:repaint(nb)
     if nb then
         self.spriteBatchs[nb]:clear()
         for x=0,(self.LX)-1 do
